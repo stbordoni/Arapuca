@@ -4,15 +4,13 @@ import os
 
 from scipy.signal import find_peaks
 
-
 ped   = list(range(100, 200))   # to estimate the pedestal
 rowin = list(range(24, 2024))   # all readout window
 wf    = list(range(250, 1500))  # waveform 
 tail  = list(range(1700, 2000)) # to estimate the single p.e.
 pe    = list(range(200, 800)) # to estimate the single p.e.
 
-
-
+#
 #
 #
 ##
