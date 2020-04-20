@@ -1,0 +1,7 @@
+mod304/
+Xedop_3rd/
+venv/
+.ipynb_checkpoints/
+.vscode/
+__pycache__/
+.DS_Store
