@@ -43,7 +43,7 @@ def prepare_dataset(df_list):
 
         _df = define_channel(_df)
         _df = do_reindex(_df)
-        _df = flag_saturated(_df)
+        _df = flag_saturated(_df, 16383)
         _df = compute_pedestal(_df)
         _df = subtract_pedestal(_df)
         _df = remove_noise(_df) 
@@ -102,11 +102,11 @@ def subtract_pedestal(df):
 
 
 #
-#  Apply rolling mean to remove noise. A winodow of 20 seems to work fine (checked also :5,8,10, 15)
+#  Apply rolling mean to remove noise. A winodow of 30 seems to work fine for the Arapucas 304
 ##
 def remove_noise(df):
     df=df.copy()
-    df[rowin]= df[rowin].rolling(window=20,  axis=1).mean()
+    df[rowin]= df[rowin].rolling(window=30,  axis=1).mean()
     return df
 
 

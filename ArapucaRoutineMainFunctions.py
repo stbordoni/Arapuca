@@ -12,7 +12,8 @@ from ArapucaRoutineUtils import *
 
 def parse_file_name( base_path, file_name):
     p = re.compile(os.path.join(base_path,     
-    'run(?P<run_number>\d+)_evt(?P<run_part>\d+)_mod304_ch(?P<channel>\d+).dat') )
+    'run(?P<run_number>\d+)_evt(?P<run_part>\d+)_mod(?P<module>\d+)_ch(?P<channel>\d+).dat') )
+
 
     m = p.match(file_name)
     d = m.groupdict()
@@ -53,7 +54,7 @@ def create_dataset_list(file_name_dict):
     
     df_list = []
     
-    for i in range (0,2):
+    for i in range (0,12):
         print('loading files for channel ', i)
         tmp_filelist = file_for_channel(file_name_dict, ch=i)
         
