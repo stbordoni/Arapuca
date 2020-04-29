@@ -6,9 +6,9 @@ from scipy.signal import find_peaks
 
 ped   = list(range(100, 200))   # to estimate the pedestal
 rowin = list(range(24, 2024))   # all readout window
-wf    = list(range(250, 1500))  # waveform 
+wf    = list(range(700, 2000))  # waveform 
 tail  = list(range(1700, 2000)) # to estimate the single p.e.
-pe    = list(range(200, 800)) # to estimate the single p.e.
+pe    = list(range(100, 800)) # to estimate the single p.e.
 
 #
 #
@@ -72,7 +72,9 @@ def define_channel(df):
 ## 
 def do_reindex(df):
     df=df.copy()
-    df.insert(1, 'evt number', int(df.iloc[0,3]) )  # --> it's the 2nd entry of the header but since there is a ch now inserted I should shift of 1 unit
+    df.insert(1, 'Evt number', df[2].astype(int) )  # --> it's the 2nd entry of the header 
+    df.insert(1, 'Run number', df[0].astype(int) )  # --> it's the 2nd entry of the header 
+
     return df
     #return df.reset_index().rename(columns={"index": "evt number"})
 
@@ -129,8 +131,8 @@ def find_singlePE(x, myrange):
 
     x = x[min(myrange) : max(myrange)]
     
-    peaks, properties = find_peaks(x, height=[10,30], width=30, distance = 50)    
-    
+    #peaks, properties = find_peaks(x, height=[10,30], width=30, distance = 50)    
+    peaks, properties = find_peaks(x, height=[5,20], prominence=[5,15], width=20, distance = 30)
     peaks = peaks+min(myrange)
     
     npeaks = len(peaks)  
