@@ -159,3 +159,38 @@ def compute_singlepe(df):
     
     return df
 
+
+def do_average_wf(dflist):
+    df_av_wf = []
+    
+    for df in dflist:
+
+        df_tmp = (df.loc[ (df['Saturated'] == False ) & (df['hasSignal'] == True )].groupby(['Run number', 'Ch'])[wf].mean() )
+        
+        df_av_wf.append(df_tmp)
+       
+   
+    return pd.concat(df_av_wf)
+
+
+
+
+def do_average_singlepe(dflist):
+    df_av_spe = []
+    
+    for df in dflist:
+
+        df_tmp = df.loc[ (df['n pe'] >0) ].groupby(['Run number', 'Ch'])['pe area'].mean() 
+        
+        df_av_spe.append(df_tmp)
+       
+   
+    return pd.concat(df_av_spe)
+
+
+
+def calibrate_av_wf(df):
+    df.copy()
+    df[wf] = df[wf].divide(df['f_cal'], axis=0)
+    
+    return df

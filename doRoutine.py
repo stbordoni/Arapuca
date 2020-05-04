@@ -1,0 +1,64 @@
+import numpy as np
+import pandas as pd 
+import scipy as sp
+import scipy.io
+from scipy.stats import norm
+from scipy.stats import multivariate_normal
+from scipy.signal import find_peaks
+
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+
+import os
+import glob
+import fnmatch
+import re
+
+from ArapucaRoutineMainFunctions import *
+
+base_path = '/Users/bordoni/protoDUNE/XeDoping/testfiles'
+file_path = os.path.join(base_path,'*.dat')
+
+file_name_list =  glob.glob(file_path) 
+print(file_name_list)
+
+file_name_dict = [parse_file_name(base_path, f) for f in file_name_list]
+
+df_list = create_dataset_list(file_name_dict)
+df_list_proc = doPreProcessing(df_list)
+
+# compute average waveform (raw! )
+df_av_wf = do_average_wf(df_list_proc)
+
+
+# compute single pe for calibration
+df_average_spe = do_average_singlepe(df_list_proc).to_frame()
+df_average_spe.reset_index(inplace = True)
+tmp = df_average_spe.pivot(index='Run number', columns='Ch', values='pe area')
+df_calib = tmp.div(tmp[0], axis = 0)
+df_calib = df_calib.T.stack(level=0).to_frame(name='f_cal').reset_index()
+
+
+#combine datasets (done in two steps)
+df_av_wf = pd.merge(df_av_wf, df_average_spe, left_on=['Run number', 'Ch'], right_on=['Run number', 'Ch'])
+df_av_wf = pd.merge(df_av_wf, df_calib, left_on=['Run number', 'Ch'], right_on=['Run number', 'Ch'])
+
+#produce a calibrated dataset 
+df_av_wf_cal = calibrate_av_wf(df_av_wf)
+
+df_integral_calib = df_av_wf_cal.groupby(['Run number']).sum()
+df_integral_calib = tmp.sum(axis=1).to_frame().reset_index()
+print(df_integral_calib)
+df_integral_calib.to_csv('./CalibratedIntegral.csv')
+df_av_wf.to_csv('./Waveforms.csv')
+#df_av_wf_cal.to_csv('./CalibratedWaveforms.csv')
+
+matplotlib.use('Agg')
+fig = df_av_wf.groupby(['Run number']).sum().T.plot().get_figure()
+fig.savefig('AverageWf_raw.pdf')
+
+
+df_wf_calibrated = df_av_wf_cal.groupby(['Run number']).sum().T
+df_wf_calibrated[3:1300].plot().get_figure()
+fig.savefig('AverageWf_calib.pdf')
+
