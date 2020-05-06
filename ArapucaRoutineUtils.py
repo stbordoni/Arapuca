@@ -98,7 +98,7 @@ def compute_pedestal(df):
 
 
 def subtract_pedestal(df):
-    df.copy()
+    df = df.copy()
     df[rowin] = df[rowin].subtract(df['Pedestal'], axis=0)
     return df
 
@@ -119,7 +119,7 @@ def has_peak(x):
 
 
 def has_signal(df):
-    df.copy()
+    df = df.copy()
     df['hasSignal'] = df.apply(lambda x: has_peak(x[wf]), axis=1)
     return df
 
@@ -152,7 +152,7 @@ def find_singlePE(x, myrange):
 
 
 def compute_singlepe(df):
-    df.copy()
+    df = df.copy()
 
     df_pe = df.apply(lambda x: find_singlePE(x, pe), axis=1)    
     df = pd.concat([df, df_pe], axis =1)
@@ -165,7 +165,7 @@ def do_average_wf(dflist):
     
     for df in dflist:
 
-        df_tmp = (df.loc[ (df['Saturated'] == False ) & (df['hasSignal'] == True )].groupby(['Run number', 'Ch'])[wf].mean() )
+        df_tmp = (df.loc[ (df['Saturated'] == False ) & (df['hasSignal'] == True )].groupby(['Run number', 'Ch'])[rowin].mean() )
         
         df_av_wf.append(df_tmp)
        
@@ -190,7 +190,7 @@ def do_average_singlepe(dflist):
 
 
 def calibrate_av_wf(df):
-    df.copy()
-    df[wf] = df[wf].divide(df['f_cal'], axis=0)
+    df = df.copy()
+    df[rowin] = df[rowin].divide(df['f_cal'], axis=0)
     
     return df
