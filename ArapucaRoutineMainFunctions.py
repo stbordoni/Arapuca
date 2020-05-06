@@ -30,6 +30,9 @@ def file_for_channel(dictt, ch=4):
     return [ f['file_name'] for f in dictt if f['channel'] == str(ch)]
 
 
+def file_for_run(dictt, run=123445):
+    return [ f['file_name'] for f in dictt if f['run_number'] == str(run)]
+
 
 
 def readfile_list(filename_list):       
@@ -50,22 +53,27 @@ def readfile_list(filename_list):
 
 
 
-def create_dataset_list(file_name_dict):
+#def create_dataset_list(file_name_dict, run):
+#    
+#    df_list = []
+#    tmp_filelist = file_for_run(file_name_dict, run)
+#    print('Run ', run , '  has ', len(tmp_filelist), 'files'  ) 
+#    df_tmp = readfile_list(tmp_filelist)
+#    df_list.append(df_tmp)
+#    return df_list
+
+def create_dataset_list(file_name_dict, run=1234567):
     
     df_list = []
-    
-    for i in range (0,12):
-        print('loading files for channel ', i)
-        tmp_filelist = file_for_channel(file_name_dict, ch=i)
+    for c in range(0,12):
+        tmp_filelist = file_for_run_and_channel(file_name_dict, run, c)
         
+        print('Run ', run , '  has for channel ', c, '  ', len(tmp_filelist), 'files'  )
         df_tmp = readfile_list(tmp_filelist)
-        #print(type(df_tmp))
-        
         df_list.append(df_tmp)
-        
+
+    print('loaded ', len(df_list), 'channels for this run' )    
     return df_list
-
-
 
 
 
