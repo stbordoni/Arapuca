@@ -63,23 +63,23 @@ for r in runlist:
     df_integral_calib = tmp.sum(axis=1).to_frame().reset_index()
     
         
-    outputname_integral = 'CalibratedIntegral_run'+r+'_newspe.csv'
-    outputname_dataframe = 'Waveforms_run'+r+'_newspe.csv' 
-    outputname_dataframe_cal = 'CalibWaveforms_run'+r+'_newspe.csv' 
+    outputname_integral = 'CalibratedIntegral_run'+r+'_newsig.csv'
+    outputname_dataframe = 'Waveforms_run'+r+'_newsig.csv' 
+    outputname_dataframe_cal = 'CalibWaveforms_run'+r+'_newsig.csv' 
     
     df_integral_calib.to_csv(outputname_integral)
     df_av_wf.to_csv(outputname_dataframe)
     df_av_wf_cal.to_csv(outputname_dataframe_cal)
     
     fig = df_av_wf.groupby(['Ch'])[wf].sum().T.plot().get_figure()
-    fig.savefig('AverageWfs_raw_run'+r+'_newspe.pdf')
+    fig.savefig('AverageWfs_raw_run'+r+'_newsig.pdf')
 
 
     fig2 = df_av_wf_cal.groupby(['Ch'])[wf].sum().T.plot().get_figure()
-    fig2.savefig('AverageWfs_calib_run'+r+'_newspe.pdf')
+    fig2.savefig('AverageWfs_calib_run'+r+'_newsig.pdf')
 
     fig3 = df_av_wf_cal.groupby(['Run number'])[wf].sum().T.plot().get_figure()
-    fig3.savefig('AvWf_calib_run'+r+'_newspe.pdf')
+    fig3.savefig('AvWf_calib_run'+r+'_newsig.pdf')
 
     plt.close('all')
 

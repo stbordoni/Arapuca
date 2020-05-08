@@ -51,9 +51,11 @@ def prepare_dataset(df_list):
         _df = compute_pedestal(_df)
         _df = subtract_pedestal(_df)
         _df = remove_noise(_df) 
-        _df = has_signal(_df)
+        #_df = has_signal(_df)
+        _df = has_signal_new(_df)
         _df = compute_singlepe(_df)
         _df = select_singlepe(_df)
+        _df = tagGoodwf(_df)
 
         mydflist.append(_df)
         
@@ -118,15 +120,47 @@ def remove_noise(df):
 
 
 def has_peak(x):
-    peaks, properties = find_peaks(x, height=[15,800], width=10)
+    peaks, properties = find_peaks(x, height=[15,2000], width=10)
     return (len(peaks) > 0)
-
-
 
 def has_signal(df):
     df = df.copy()
     df['hasSignal'] = df.apply(lambda x: has_peak(x[wf]), axis=1)
+    
     return df
+
+
+def has_signal_new(df):
+    df = df.copy()
+    
+    df_sig = df.apply(lambda x: find_signal(x, wf), axis=1)    
+    df = pd.concat([df, df_sig], axis =1)
+
+    return df
+
+
+def find_signal(x, myrange):
+    
+
+    x = x[min(myrange) : max(myrange)]
+
+    peaks, properties = find_peaks(x, height=[15,2000], width=10)
+    peaks = peaks+min(myrange)
+    
+    npeaks = len(peaks)  
+    if (npeaks > 0):
+        height = properties['peak_heights'][0]
+        width  = properties['widths'][0]
+        xlow   = int(properties['left_ips'][0])
+        xhigh  = int(properties['right_ips'][0])
+        area   = x[xlow :xhigh].sum() 
+    else :
+        height = 0
+        width  = 0
+        area   = 0
+
+    return pd.Series([(npeaks>0), height, area], index=['hasSignal', 'signal height', 'signal area'])
+
 
 
 def find_singlePE(x, myrange):
@@ -150,6 +184,7 @@ def find_singlePE(x, myrange):
         area   = 0
         
     return pd.Series([npeaks, height, width, area], index=['n pe', 'pe height', 'pe width', 'pe area'])
+
 
 
 
@@ -184,7 +219,8 @@ def do_average_wf(dflist):
     
     for df in dflist:
 
-        df_tmp = (df.loc[ (df['Saturated'] == False ) & (df['hasSignal'] == True )].groupby(['Run number', 'Ch'])[rowin].mean() )
+        #df_tmp = (df.loc[ (df['Saturated'] == False ) & (df['hasSignal'] == True )].groupby(['Run number', 'Ch'])[rowin].mean() )
+        df_tmp = (df.loc[ (df['Saturated'] == False ) & (df['isGoodwf'] == True )].groupby(['Run number', 'Ch'])[rowin].mean() )
         
         df_av_wf.append(df_tmp)
        
@@ -266,6 +302,30 @@ def plot_contours(X, mean, cov, stepx1, stepx2):
     # Label every other level using strings
     plt.clabel(cs, cs.levels, inline=True, fmt=fmt, fontsize=18)
 
+
+def tagGoodwf(df):
+    df = df.copy()
+
+    pe_h_mu = df.loc[(df['spe 1sig']==True)]['pe height'].mean()
+    pe_h_std  = df.loc[(df['spe 1sig']==True)]['pe height'].std()
+
+    pe_a_mu = df.loc[(df['spe 1sig']==True)]['pe area'].mean()
+    pe_a_std  = df.loc[(df['spe 1sig']==True)]['pe area'].std()
+
+
+    X=df.loc[(df['hasSignal']==True) 
+            & (df['signal height'] > (3* pe_h_mu) )
+            & (df['signal area'] > (pe_a_mu +3* pe_a_std)) ,['signal height', 'signal area']].values
+
+
+
+
+    mu_s, cov_s = estimate_gaus_param(X,True)
+
+    df['isGoodwf'] = df.apply(lambda x: select_wf(x[['signal height', 'signal area']], mu_s, cov_s, 1), axis=1)
+    
+
+    return df
 
 
 
