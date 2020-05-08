@@ -2,7 +2,11 @@ import numpy as np
 import pandas as pd 
 import os
 
+from scipy.stats import norm
+from scipy.stats import multivariate_normal
 from scipy.signal import find_peaks
+
+import matplotlib.pyplot as plt
 
 ped   = list(range(100, 200))   # to estimate the pedestal
 rowin = list(range(24, 2024))   # all readout window
@@ -49,6 +53,7 @@ def prepare_dataset(df_list):
         _df = remove_noise(_df) 
         _df = has_signal(_df)
         _df = compute_singlepe(_df)
+        _df = select_singlepe(_df)
 
         mydflist.append(_df)
         
@@ -126,9 +131,6 @@ def has_signal(df):
 
 def find_singlePE(x, myrange):
 
-    #rowin = list(range(200,1500))
-    #rowin = list(range(200, 800))
-
     x = x[min(myrange) : max(myrange)]
     
     #peaks, properties = find_peaks(x, height=[10,30], width=30, distance = 50)    
@@ -157,6 +159,23 @@ def compute_singlepe(df):
     df_pe = df.apply(lambda x: find_singlePE(x, pe), axis=1)    
     df = pd.concat([df, df_pe], axis =1)
     
+    return df
+
+
+
+def select_singlepe(df):
+    df = df.copy()
+
+    X_pe=df.loc[(df['Saturated'] == False ) & 
+                (df['hasSignal'] == True ) &
+                (df['pe height']>0)&
+                (df['pe width']>0),['pe height', 'pe width']].values
+
+    mu_pe, cov_pe = estimate_gaus_param(X_pe,True)
+
+    df['spe 1sig'] = df.apply(lambda x: select_wf(x[['pe height','pe width']], mu_pe, cov_pe, 1), axis=1)
+    df['spe 2sig'] = df.apply(lambda x: select_wf(x[['pe height','pe width']], mu_pe, cov_pe, 2), axis=1)
+
     return df
 
 
@@ -189,8 +208,76 @@ def do_average_singlepe(dflist):
 
 
 
+def do_average_singlepe_new(dflist):
+    df_av_spe = []
+    
+    for df in dflist:
+
+        df_tmp = df.loc[(df['spe 1sig']==True) ].groupby(['Run number', 'Ch'])['pe area'].mean()
+        df_av_spe.append(df_tmp)
+       
+   
+    return pd.concat(df_av_spe)
+
+
 def calibrate_av_wf(df):
     df = df.copy()
     df[rowin] = df[rowin].divide(df['f_cal'], axis=0)
     
     return df
+
+
+def estimate_gaus_param(X, multivar=False):
+    mean = np.mean(X, axis=0)
+    
+    if multivar:
+        cov = 1/float(len(X)) * np.dot( (X - mean).T , X-mean)
+    else:
+        cov = np.diag(np.var(X, axis=0))
+    return mean,cov
+
+
+
+def plot_contours(X, mean, cov, stepx1, stepx2):
+    
+    X1range = np.arange(np.min(X[:,0]),np.max(X[:,0]),stepx1)
+    X2range = np.arange(np.min(X[:,1]),np.max(X[:,1]),stepx2)
+
+    X1mesh, X2mesh = np.meshgrid(X1range, X2range)
+    
+    coord_list = [ np.array([X0,X1]) for X0, X1 in zip(np.ravel(X1mesh), np.ravel(X2mesh)) ]
+    Z = multivariate_normal.pdf( coord_list , mean=mean, cov=cov)
+    Z = Z.reshape(X1mesh.shape)
+    
+    #cont_levels = [10**exp for exp in range(-50,0,3)]
+    sigma = np.sqrt(np.diag(cov))
+    nsigma = np.array([mean+n*sigma for n in range(1,3)[::-1]])
+    
+    cont_levels = multivariate_normal.pdf( nsigma , mean=mean, cov=cov)    
+    cs = plt.contour(X1mesh, X2mesh, Z, 10, levels=cont_levels, colors=('blue', 'yellow', 'orange', 'red' ))
+   
+    #plt.clabel(cs, fmt='%g', inline=1, fontsize=10)
+
+    fmt = {}
+    strs = ['$1 \sigma$', '$2 \sigma$', '$3 \sigma$', '$4 \sigma$', '$5 \sigma$', '$6 \sigma$', '$7 \sigma$']
+    for l, s in zip(cs.levels[::-1], strs):
+        fmt[l] = s
+
+    # Label every other level using strings
+    plt.clabel(cs, cs.levels, inline=True, fmt=fmt, fontsize=18)
+
+
+
+
+def select_wf(xy, mean, cov, n_sigma):
+ 
+    Z = multivariate_normal.pdf( xy , mean=mean, cov=cov)
+    #print(Z)
+    
+    sigma = np.sqrt(np.diag(cov))
+    limit = n_sigma * sigma     
+        
+    thrsld = multivariate_normal.pdf( limit, mean=mean, cov=cov)
+    #print(thrsld)
+    
+    return Z > thrsld
