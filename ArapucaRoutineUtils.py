@@ -220,8 +220,9 @@ def do_average_wf(dflist):
     for df in dflist:
 
         #df_tmp = (df.loc[ (df['Saturated'] == False ) & (df['hasSignal'] == True )].groupby(['Run number', 'Ch'])[rowin].mean() )
-        df_tmp = (df.loc[ (df['Saturated'] == False ) & (df['isGoodwf'] == True )].groupby(['Run number', 'Ch'])[rowin].mean() )
-        
+        df_tmp = df.loc[ (df['Saturated'] == False ) & (df['isGoodwf'] == True )].groupby(['Run number', 'Ch'])[rowin].mean() 
+        df_tmp['n good evts'] = df.loc[ (df['Saturated'] == False ) & (df['isGoodwf'] == True )].groupby(['Run number', 'Ch']).size()
+
         df_av_wf.append(df_tmp)
        
    
