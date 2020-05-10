@@ -249,10 +249,12 @@ def do_average_singlepe_new(dflist):
     
     for df in dflist:
 
-        df_tmp = df.loc[(df['spe 1sig']==True) ].groupby(['Run number', 'Ch'])['pe area'].mean()
+        area = df.loc[(df['spe 1sig']==True) ].groupby(['Run number', 'Ch'])['pe area'].mean()
+        std  = df.loc[(df['spe 1sig']==True) ].groupby(['Run number', 'Ch'])['pe area'].std()
+        
+        df_tmp=pd.merge(left = area, right=std, on=['Run number', 'Ch'],suffixes = ('_mean', '_std') )
         df_av_spe.append(df_tmp)
-       
-   
+
     return pd.concat(df_av_spe)
 
 

@@ -40,28 +40,30 @@ for r in runlist:
 
 
     # compute single pe for calibration
-    #df_average_spe = do_average_singlepe(df_list_proc).to_frame()
-    df_average_spe = do_average_singlepe_new(df_list_proc).to_frame()
-
+    df_average_spe = do_average_singlepe_new(df_list_proc)
     df_average_spe.reset_index(inplace = True)
-    tmp = df_average_spe.pivot(index='Run number', columns='Ch', values='pe area')
-    
 
-
-    df_calib = tmp.div(tmp[0], axis = 0)
-    df_calib = df_calib.T.stack(level=0).to_frame(name='f_cal').reset_index()
+    df_average_spe['f_cal'] = df_average_spe['pe area_mean']/df_average_spe['pe area_mean'][0]    
+    #tmp = df_average_spe.pivot(index='Run number', columns='Ch', values='pe area')
+    #df_calib = tmp.div(tmp[0], axis = 0)
+    #df_calib = df_calib.T.stack(level=0).to_frame(name='f_cal').reset_index()
 
 
     #combine datasets (done in two steps)
     df_av_wf = pd.merge(df_av_wf, df_average_spe, left_on=['Run number', 'Ch'], right_on=['Run number', 'Ch'])
-    df_av_wf = pd.merge(df_av_wf, df_calib, left_on=['Run number', 'Ch'], right_on=['Run number', 'Ch'])
+    #df_av_wf = pd.merge(df_av_wf, df_calib, left_on=['Run number', 'Ch'], right_on=['Run number', 'Ch'])
 
     #produce a calibrated dataset 
     df_av_wf_cal = calibrate_av_wf(df_av_wf)
 
-    df_integral_calib = df_av_wf_cal.groupby(['Run number']).sum()
-    df_integral_calib = tmp.sum(axis=1).to_frame().reset_index()
+    #df_integral_calib = df_av_wf_cal.groupby(['Run number']).sum()
+    #df_integral_calib = df_integral_calib.sum(axis=1).to_frame().reset_index()
     
+    df_integral_calib = df_av_wf_cal[wf].sum(axis=1).to_frame().rename(columns={0:'Integral'})
+    df_integral_calib = pd.concat([df_av_wf_cal[['Run number', 'Ch']], df_integral_calib], axis=1)
+
+    df_integral_calib = pd.merge(df_integral_calib, df_average_spe, left_on=['Run number', 'Ch'], right_on=['Run number', 'Ch'])
+
         
     outputname_integral = 'CalibratedIntegral_run'+r+'_newsig.csv'
     outputname_dataframe = 'Waveforms_run'+r+'_newsig.csv' 
