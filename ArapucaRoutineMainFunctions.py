@@ -5,6 +5,7 @@ import re
 
 
 from scipy.signal import find_peaks
+from joblib import Parallel, delayed
 
 from ArapucaRoutineUtils import *
 #from RoutineDrawUtils import *
@@ -47,7 +48,8 @@ def readfile_list(filename_list):
         #create a dataframe from the numpy array
         return pd.DataFrame(data, columns=range(0,2024))
     
-    data_list = [read_single_file(f) for f in filename_list]
+    #data_list = [read_single_file(f) for f in filename_list]
+    data_list = Parallel(n_jobs=-1)(delayed(read_single_file)(file) for file in filename_list)
     return pd.concat(data_list, axis=0)
 
 
