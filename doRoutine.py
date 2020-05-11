@@ -38,6 +38,7 @@ def main(par1, par2):
 
     runlist = [ r['run_number'] for r in file_name_dict ]
     runlist = list(set(runlist))
+    runlist.sort()
 
     print('Full list of runs to process : \n', runlist )
 
