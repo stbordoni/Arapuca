@@ -1,0 +1,16 @@
+#doping 1st injection
+dop_1_1 = list(range(10872,10960))
+
+#doping 2nd injection
+dop_2_1 = list(range(11013,11022))
+dop_2_2 = list(range(11098,11101))
+
+#doping 3rd injection
+dop_3_1 = list(range(11102,11118))
+dop_3_2 = list(range(11139,11143))
+
+
+#doping 4th injection
+dop_4_1 = list(range(11145,11149))
+dop_4_2 = [11152, 11158, 11159, 11163, 11164, 11165, 11184]
+dop_4_3 = list(range(11170,11173))
