@@ -4,6 +4,15 @@ mod304_v2 list of files
 '11236', '11244', '11245', '11255', '11257', '11259', '11260', 
 '11261', '11262', '11264', '11265', '11269', '11270']
 
+['10960', '11022', '11101', '11118', '11143', '11174', '11234',
+ '11236', '11244', '11245', '11255', '11257', '11259', '11260', 
+'11261', '11262', '11264', '11265', '11269', '11270']
+
+'11092', '11149', '11173', '11184', '11271'
+problem on 11092 for apa6
+
+
+
 running on dunegpvm07 screen arapuca
 
 /dune/app/users/sbordoni/workarea/ArapucaAna/ArapucaRoutineUtils.py:147: PeakPropertyWarning: some peaks have a width of 0
@@ -25,11 +34,6 @@ run 19050: crashed
 
 run 10960: probelms with SE peak (cov etc) --> need to check the output
 
-run 11092: missing maybe because nested in the EField run? in principle should be ok, but only 1hour run 
-
-run 11149, 11173 --?  need to run
-
-
 ### Investigation of run crashed for APA 3
 
   run 11020: 
@@ -40,4 +44,11 @@ run 11149, 11173 --?  need to run
   run 11022: 
     - crash on estimation of singlepe (mu, cov)  actually killed.. 
     - checked on the e-log and it reads the SSP 304 were at 49V bias, --> need to try to run again
+
+  missing runs: 11158 ? need to check 
+
+  to run:   11270
+            11272
+            11273
+            11289
 
