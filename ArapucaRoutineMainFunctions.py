@@ -41,7 +41,7 @@ def readfile_list(filename_list):
     def read_single_file(f):
         #load the file as a np array
         data = np.loadtxt(f)
-        #data = pd.read_fwf(f, header=None)
+        
         nevts = int(len(data)/2024)
         #reshape the array as 10000 events and 2024 columns each
         data = data.reshape(nevts, 2024)
@@ -81,11 +81,12 @@ def create_dataset_list(file_name_dict, run=1234567):
 
 
 def doPreProcessing(df_list):
-    df_list.copy()
+    df_list_raw = df_list.copy()
     
     # pre-processing
-    df_list = prepare_dataset(df_list)
-    
+    #df_list = prepare_dataset(df_list)
+    df_list = Parallel(n_jobs=-1)(delayed(prepare_dataset_parallel)(_df) for _df in df_list_raw)
+
     print('preprocessing done!')
 
     return df_list
