@@ -66,6 +66,27 @@ def prepare_dataset(df_list):
     return mydflist
 
 
+def prepare_dataset_parallel(_df):
+    
+    _df = define_channel(_df)
+    _df = do_reindex(_df)
+    _df = flag_saturated(_df, 16383)
+    _df = compute_pedestal(_df)
+    _df = subtract_pedestal(_df)
+    _df = remove_noise(_df) 
+    #_df = has_signal(_df)
+    _df = has_signal_new(_df)
+    _df = compute_singlepe(_df)
+    _df = select_singlepe(_df)
+    _df = tagGoodwf(_df)
+        
+
+    print('done!')
+        
+        
+    return _df
+
+
 
 def define_channel(df):
     df = df.copy()
@@ -227,6 +248,7 @@ def do_average_wf(dflist):
        
    
     return pd.concat(df_av_wf)
+
 
 
 
